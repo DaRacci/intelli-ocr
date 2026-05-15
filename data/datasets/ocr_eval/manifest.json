@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "description": "OCR evaluation dataset manifest for Intelli OCR.",
+  "samples": [
+    {
+      "id": "terminal_dark_001",
+      "image": "images/terminal_dark_001.png",
+      "annotation": "annotations/terminal_dark_001.json",
+      "tags": ["terminal", "dark-theme", "english"],
+      "status": "planned"
+    },
+    {
+      "id": "gtk_light_001",
+      "image": "images/gtk_light_001.png",
+      "annotation": "annotations/gtk_light_001.json",
+      "tags": ["gtk", "light-theme", "english"],
+      "status": "planned"
+    },
+    {
+      "id": "browser_article_001",
+      "image": "images/browser_article_001.png",
+      "annotation": "annotations/browser_article_001.json",
+      "tags": ["browser", "dense-layout", "english"],
+      "status": "planned"
+    }
+  ]
+}

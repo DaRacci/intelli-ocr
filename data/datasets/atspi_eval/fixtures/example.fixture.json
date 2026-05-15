@@ -1,0 +1,33 @@
+{
+  "fixture_name": "example_fixture",
+  "application": "Example App",
+  "window_title": "Example Window",
+  "captured_at": "1970-01-01T00:00:00Z",
+  "nodes": [
+    {
+      "role": "window",
+      "name": "Example Window",
+      "text": null,
+      "bounds": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1280.0,
+        "height": 720.0
+      },
+      "children": [
+        {
+          "role": "label",
+          "name": "Example Label",
+          "text": "Example text",
+          "bounds": {
+            "x": 100.0,
+            "y": 120.0,
+            "width": 120.0,
+            "height": 24.0
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}

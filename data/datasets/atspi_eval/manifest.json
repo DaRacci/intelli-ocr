@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "description": "AT-SPI fixture manifest for Intelli OCR.",
+  "fixtures": [
+    {
+      "id": "gtk_text_view_001",
+      "fixture": "fixtures/gtk_text_view_001.json",
+      "tags": ["gtk", "text-view", "english"],
+      "status": "planned"
+    },
+    {
+      "id": "qt_text_edit_001",
+      "fixture": "fixtures/qt_text_edit_001.json",
+      "tags": ["qt", "text-edit", "english"],
+      "status": "planned"
+    },
+    {
+      "id": "electron_editor_001",
+      "fixture": "fixtures/electron_editor_001.json",
+      "tags": ["electron", "editor", "english"],
+      "status": "planned"
+    }
+  ]
+}

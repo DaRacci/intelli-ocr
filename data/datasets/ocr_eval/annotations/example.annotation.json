@@ -1,0 +1,24 @@
+{
+  "image_file": "images/example.png",
+  "screen_size": {
+    "width": 1920,
+    "height": 1080
+  },
+  "language": "eng",
+  "notes": "Template annotation file. Replace with real sample data.",
+  "fragments": [
+    {
+      "id": 1,
+      "text": "Example",
+      "bounds": {
+        "x": 100.0,
+        "y": 120.0,
+        "width": 88.0,
+        "height": 24.0
+      },
+      "block_index": 0,
+      "line_index": 0,
+      "fragment_index": 0
+    }
+  ]
+}

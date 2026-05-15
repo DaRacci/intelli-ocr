@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "description": "Selection behavior evaluation manifest for Intelli OCR.",
+  "cases": [
+    {
+      "id": "single_fragment_drag_001",
+      "case": "cases/single_fragment_drag_001.json",
+      "tags": ["single-fragment", "english"],
+      "status": "planned"
+    },
+    {
+      "id": "multi_line_drag_001",
+      "case": "cases/multi_line_drag_001.json",
+      "tags": ["multi-line", "english"],
+      "status": "planned"
+    },
+    {
+      "id": "empty_selection_001",
+      "case": "cases/empty_selection_001.json",
+      "tags": ["empty-selection"],
+      "status": "planned"
+    }
+  ]
+}
