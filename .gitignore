@@ -1,0 +1,38 @@
+# Rust outputs
+/target
+
+# Nix stuff
+result
+result-*
+
+# Rust
+/target
+
+# Logs
+*.log
+*.log.*
+
+# Environment
+.direnv
+.env
+.env.*
+!.env.example
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Local dataset work
+/data/datasets/**/raw/
+/data/datasets/**/*.tmp
+/data/datasets/**/*.bak
+
+# Added by cargo
+
+#
+# already existing elements were commented out
+
+#/target

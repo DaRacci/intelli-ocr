@@ -1,0 +1,45 @@
+{
+  description = "Rust project template";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs =
+    {
+      nixpkgs,
+      rust-overlay,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs { inherit system overlays; };
+        rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+
+        libPath = pkgs.lib.makeLibraryPath [
+          pkgs.libGL
+          pkgs.libxkbcommon
+          pkgs.wayland
+        ];
+      in
+      {
+        devShells.default = pkgs.mkShell {
+          buildInputs = [
+            rustToolchain
+            pkgs.pkg-config
+            pkgs.openssl
+            pkgs.wayland
+          ];
+
+          RUST_LOG = "debug";
+          RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
+          RUST_BACKTRACE = 1;
+          LD_LIBRARY_PATH = libPath;
+        };
+      }
+    );
+}
