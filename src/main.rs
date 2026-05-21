@@ -13,7 +13,10 @@ mod types;
 
 use anyhow::Result;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let command = cli::parse();
-    cli::dispatch(command)
+    cli::dispatch(command).await?;
+
+    Ok(())
 }
