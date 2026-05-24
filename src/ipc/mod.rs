@@ -13,7 +13,7 @@ use tokio::{
 };
 use xdg::BaseDirectories;
 
-use crate::types::CaptureRequest;
+use crate::capture::CaptureRequest;
 
 const IPC_DIR_NAME: &str = "intelli-ocr";
 const IPC_SOCKET_FILENAME: &str = "ipc.sock";
