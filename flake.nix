@@ -12,6 +12,7 @@
       nixpkgs,
       rust-overlay,
       flake-utils,
+      ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -20,10 +21,11 @@
         pkgs = import nixpkgs { inherit system overlays; };
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
-        libPath = pkgs.lib.makeLibraryPath [
+        libPackages = [
           pkgs.libGL
           pkgs.libxkbcommon
           pkgs.wayland
+          pkgs.libxkbcommon
         ];
       in
       {
@@ -33,12 +35,12 @@
             pkgs.pkg-config
             pkgs.openssl
             pkgs.wayland
-          ];
+          ] ++ libPackages;
 
           RUST_LOG = "debug";
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           RUST_BACKTRACE = 1;
-          LD_LIBRARY_PATH = libPath;
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libPackages;
         };
       }
     );

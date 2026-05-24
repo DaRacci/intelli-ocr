@@ -21,3 +21,8 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
 thiserror = "2.0.18"
 xdg = "3.0.0"
+grim-rs = { version = "0.1.9", default-features = false, features = ["png"] }
+smithay-client-toolkit = { version = "0.20.0" }
+wayland-client = "0.31.14"
+wayland-protocols = { version = "0.32.12" }
+wayland-protocols-wlr = { version = "0.3.12", features = ["client"] }
