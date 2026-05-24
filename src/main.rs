@@ -14,11 +14,15 @@ mod text;
 mod types;
 
 use anyhow::Result;
+use clap::Parser;
+
+use crate::{cli::Cli, types::Runtime};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let command = cli::parse();
-    cli::dispatch(command).await?;
+    let runtime = Runtime::new()?;
+    let command = Cli::parse().command;
+    cli::dispatch(command, runtime).await?;
 
     Ok(())
 }

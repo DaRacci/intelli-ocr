@@ -1,5 +1,8 @@
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicU64, Ordering};
+
+use crate::compositor_backend::CompositorBackend;
 
 static COUNTER: AtomicU64 = AtomicU64::new(1);
 
@@ -25,4 +28,15 @@ pub struct Rect {
     pub y: f32,
     pub width: f32,
     pub height: f32,
+}
+
+pub struct Runtime {
+    pub compositor_backend: Box<dyn CompositorBackend>,
+}
+
+impl Runtime {
+    pub fn new() -> Result<Self> {
+        let compositor_backend = crate::compositor_backend::get_compositor_backend()?;
+        Ok(Self { compositor_backend })
+    }
 }

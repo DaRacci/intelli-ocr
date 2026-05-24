@@ -1,8 +1,4 @@
-use std::{
-    io,
-    path::{Path, PathBuf},
-    process::exit,
-};
+use std::{io, path::PathBuf, process::exit};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -13,7 +9,7 @@ use tokio::{
 };
 use xdg::BaseDirectories;
 
-use crate::capture::CaptureRequest;
+use crate::{capture::CaptureRequest, types::Runtime};
 
 const IPC_DIR_NAME: &str = "intelli-ocr";
 const IPC_SOCKET_FILENAME: &str = "ipc.sock";
@@ -23,7 +19,7 @@ pub enum IpcMessage {
     CaptureNow(CaptureRequest),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IpcServer {
     socket_path: PathBuf,
     replace: bool,
@@ -58,7 +54,6 @@ impl IpcServer {
         let listener = UnixListener::bind(&socket_path)?;
 
         while let Ok((mut stream, _)) = listener.accept().await {
-            println!("Listening on {socket_path:?}");
             let mut buffer: [u8; 1024] = [0u8; 1024];
             let channel = channel.clone();
             tokio::spawn(async move {
@@ -117,7 +112,7 @@ impl IpcServer {
     }
 }
 
-pub async fn send_trigger(mut shutdown_receiver: Receiver<()>) -> Result<()> {
+pub async fn send_trigger(runtime: Runtime, mut shutdown_receiver: Receiver<()>) -> Result<()> {
     let socket_path = default_socket_path()?;
     if !socket_path.exists() || !socket_is_listening(&socket_path)? {
         return Err(anyhow::anyhow!(
@@ -140,7 +135,9 @@ pub async fn send_trigger(mut shutdown_receiver: Receiver<()>) -> Result<()> {
         }
     });
 
-    let message = IpcMessage::CaptureNow(CaptureRequest { output_name: None });
+    let message = IpcMessage::CaptureNow(CaptureRequest {
+        output_name: Some(runtime.compositor_backend.get_active_output()?),
+    });
     let message_json = serde_json::to_string(&message)?;
     unixstream.write_all(message_json.as_bytes()).await?;
     println!("Sent trigger message: {message_json}");

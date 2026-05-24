@@ -5,6 +5,7 @@ use tokio::sync::mpsc::channel;
 
 use crate::daemon;
 use crate::ipc;
+use crate::types::Runtime;
 
 #[derive(Debug, Parser)]
 #[command(name = "intelli-ocr")]
@@ -23,11 +24,7 @@ pub enum Command {
     Trigger,
 }
 
-pub fn parse() -> Command {
-    Cli::parse().command
-}
-
-pub async fn dispatch(command: Command) -> Result<()> {
+pub async fn dispatch(command: Command, runtime: Runtime) -> Result<()> {
     let (shutdown_sender, shutdown_receiver) = channel(1);
     tokio::spawn(async move {
         match signal::ctrl_c().await {
@@ -41,7 +38,10 @@ pub async fn dispatch(command: Command) -> Result<()> {
     });
 
     match command {
-        Command::Daemon { replace } => daemon::run(shutdown_receiver, replace).await,
-        Command::Trigger => ipc::send_trigger(shutdown_receiver).await,
+        Command::Daemon { replace } => {
+            let daemon = daemon::Daemon::new(shutdown_receiver, replace)?;
+            daemon.run().await
+        }
+        Command::Trigger => ipc::send_trigger(runtime, shutdown_receiver).await,
     }
 }
