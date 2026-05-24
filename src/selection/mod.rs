@@ -1,13 +1,26 @@
 use anyhow::Result;
 
-use crate::types::{SelectionInput, SelectionResult, TextFragment};
+use crate::{
+    text::TextFragment,
+    types::{Point, Rect},
+};
+
+#[derive(Debug, Clone)]
+pub struct SelectionInput {
+    pub start: Point,
+    pub end: Point,
+}
+
+#[derive(Debug, Clone)]
+pub struct SelectionResult {
+    pub fragment_ids: Vec<u64>,
+    pub text: String,
+    pub bounds: Vec<Rect>,
+}
 
 pub trait SelectionStrategy: Send + Sync {
-    fn select(
-        &self,
-        fragments: &[TextFragment],
-        input: &SelectionInput,
-    ) -> Result<SelectionResult>;
+    fn select(&self, fragments: &[TextFragment], input: &SelectionInput)
+    -> Result<SelectionResult>;
 }
 
 pub struct DragSelectionStrategy;

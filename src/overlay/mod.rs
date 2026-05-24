@@ -1,6 +1,29 @@
 use anyhow::Result;
 
-use crate::types::{OverlayCommand, OverlayEvent, OverlayState};
+use crate::{capture::CaptureFrame, selection::SelectionResult, text::TextFragment, types::Point};
+
+#[derive(Debug, Clone)]
+pub struct OverlayState {
+    pub frame: CaptureFrame,
+    pub fragments: Vec<TextFragment>,
+    pub selection: Option<SelectionResult>,
+}
+
+#[derive(Debug, Clone)]
+pub enum OverlayCommand {
+    ReplaceState(OverlayState),
+    UpdateSelection(SelectionResult),
+    ClearSelection,
+}
+
+#[derive(Debug, Clone)]
+pub enum OverlayEvent {
+    EscapePressed,
+    CopyPressed,
+    DragStarted(Point),
+    DragUpdated(Point),
+    DragFinished(Point),
+}
 
 pub trait OverlayBackend: Send {
     fn show(&mut self, state: &OverlayState) -> Result<()>;

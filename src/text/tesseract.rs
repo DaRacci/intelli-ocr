@@ -1,7 +1,9 @@
 use anyhow::Result;
 
-use crate::text::TextSource;
-use crate::types::{CaptureFrame, TextFragment, TextSourceKind};
+use crate::{
+    capture::CaptureFrame,
+    text::{TextFragment, TextSource, TextSourceKind},
+};
 
 pub struct TesseractTextSource;
 

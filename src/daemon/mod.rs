@@ -1,28 +1,20 @@
-use std::sync::Arc;
-
 use anyhow::Result;
-use tokio::sync::Mutex;
 use tokio::sync::mpsc::{Receiver, channel};
 
-use crate::capture::{CaptureBackend, NullCaptureBackend};
+use crate::capture::grim_rs::GrimRsCaptureBackend;
+use crate::capture::{CaptureBackend, CaptureRequest};
 use crate::ipc::IpcServer;
 use crate::overlay::{NullOverlayBackend, OverlayBackend};
 use crate::selection::{DragSelectionStrategy, SelectionStrategy};
 use crate::text::{AtSpiTextSource, NullTextMerger, TesseractTextSource, TextMerger, TextSource};
-use crate::types::{AppState, CaptureRequest, SessionId};
+use crate::types::SessionId;
 
-pub async fn run(shutdown_receiver: Receiver<()>, replace: bool) -> Result<()> {
-    let daemon = Daemon::new(
-        Box::new(NullCaptureBackend),
-        Box::new(NullOverlayBackend),
-        Box::new(AtSpiTextSource),
-        Box::new(TesseractTextSource),
-        Box::new(NullTextMerger),
-        Box::new(DragSelectionStrategy),
-        IpcServer::new(shutdown_receiver, replace)?,
-    );
-
-    daemon.run().await
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AppState {
+    Idle,
+    Capturing,
+    Detecting,
+    ShowingOverlay,
 }
 
 pub struct Daemon {
@@ -37,51 +29,38 @@ pub struct Daemon {
 }
 
 impl Daemon {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        capture_backend: Box<dyn CaptureBackend>,
-        overlay_backend: Box<dyn OverlayBackend>,
-        primary_text_source: Box<dyn TextSource>,
-        fallback_text_source: Box<dyn TextSource>,
-        text_merger: Box<dyn TextMerger>,
-        selection_strategy: Box<dyn SelectionStrategy>,
-        ipc_server: IpcServer,
-    ) -> Self {
-        Self {
-            capture_backend,
-            overlay_backend,
-            primary_text_source,
-            fallback_text_source,
-            text_merger,
-            selection_strategy,
-            ipc_server,
+    pub fn new(shutdown_receiver: Receiver<()>, replace: bool) -> Result<Self> {
+        Ok(Self {
+            capture_backend: Box::new(GrimRsCaptureBackend::new()?),
+            overlay_backend: Box::new(NullOverlayBackend),
+            primary_text_source: Box::new(AtSpiTextSource),
+            fallback_text_source: Box::new(TesseractTextSource),
+            text_merger: Box::new(NullTextMerger),
+            selection_strategy: Box::new(DragSelectionStrategy),
+            ipc_server: IpcServer::new(shutdown_receiver, replace)?,
             state: AppState::Idle,
-        }
+        })
     }
 
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(mut self) -> Result<()> {
         let (tx, rx) = channel(1);
-        let self_arc = Arc::new(Mutex::new(self));
 
         let receiver = {
-            let self_arc = Arc::clone(&self_arc);
+            let ipc_server = self.ipc_server.clone();
             tokio::spawn(async move {
-                let guard = self_arc.lock().await;
-                if let Err(e) = guard.ipc_server.recv(tx).await {
+                println!("Starting IPC server...");
+                if let Err(e) = ipc_server.recv(tx).await {
                     eprintln!("Error in IPC server: {e}");
                 };
             })
         };
 
-        let listener = {
-            let self_arc = Arc::clone(&self_arc);
-            tokio::spawn(async move {
-                let mut guard = self_arc.lock().await;
-                if let Err(e) = guard.run_request_handler(rx).await {
-                    eprintln!("Error in request handler: {e}");
-                };
-            })
-        };
+        let listener = tokio::spawn(async move {
+            println!("Starting request handler...");
+            if let Err(e) = self.run_request_handler(rx).await {
+                eprintln!("Error in request handler: {e}");
+            };
+        });
 
         println!("Daemon is running and listening for IPC messages...");
         tokio::try_join!(listener, receiver)?;
@@ -95,7 +74,6 @@ impl Daemon {
         mut rx: Receiver<crate::ipc::IpcMessage>,
     ) -> Result<()> {
         while let Some(message) = rx.recv().await {
-            println!("Received IPC message: {message:?}");
             match message {
                 crate::ipc::IpcMessage::CaptureNow(request) => {
                     println!("Received capture request: {request:?}");
@@ -110,7 +88,8 @@ impl Daemon {
 
     pub fn handle_capture_request(&mut self, request: CaptureRequest) -> Result<SessionId> {
         self.state = AppState::Capturing;
+        self.capture_backend.capture(&request)?;
 
-        todo!("capture session orchestration not implemented")
+        Ok(SessionId::new())
     }
 }

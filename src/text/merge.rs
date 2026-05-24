@@ -1,7 +1,6 @@
 use anyhow::Result;
 
-use crate::text::TextMerger;
-use crate::types::TextFragment;
+use crate::text::{TextFragment, TextMerger};
 
 pub struct NullTextMerger;
 
