@@ -26,3 +26,6 @@ smithay-client-toolkit = { version = "0.20.0" }
 wayland-client = "0.31.14"
 wayland-protocols = { version = "0.32.12" }
 wayland-protocols-wlr = { version = "0.3.12", features = ["client"] }
+relm4 = "0.11.0"
+gtk = { version = "0.11.3", package = "gtk4" }
+gtk4-layer-shell = "0.8.0"

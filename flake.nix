@@ -26,6 +26,8 @@
           pkgs.libxkbcommon
           pkgs.wayland
           pkgs.libxkbcommon
+          pkgs.gtk4
+          pkgs.gtk4-layer-shell
         ];
       in
       {

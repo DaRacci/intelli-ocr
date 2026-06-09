@@ -3,8 +3,9 @@ use tokio::sync::mpsc::{Receiver, channel};
 
 use crate::capture::grim_rs::GrimRsCaptureBackend;
 use crate::capture::{CaptureBackend, CaptureRequest};
-use crate::ipc::IpcServer;
-use crate::overlay::{NullOverlayBackend, OverlayBackend};
+use crate::ipc::{IpcMessage, IpcServer};
+use crate::overlay::relm4::Relm4OverlayBackend;
+use crate::overlay::{OverlayBackend, OverlayCommand, OverlayState, relm4};
 use crate::selection::{DragSelectionStrategy, SelectionStrategy};
 use crate::text::{AtSpiTextSource, NullTextMerger, TesseractTextSource, TextMerger, TextSource};
 use crate::types::SessionId;
@@ -32,7 +33,7 @@ impl Daemon {
     pub fn new(shutdown_receiver: Receiver<()>, replace: bool) -> Result<Self> {
         Ok(Self {
             capture_backend: Box::new(GrimRsCaptureBackend::new()?),
-            overlay_backend: Box::new(NullOverlayBackend),
+            overlay_backend: Box::new(Relm4OverlayBackend::new()?),
             primary_text_source: Box::new(AtSpiTextSource),
             fallback_text_source: Box::new(TesseractTextSource),
             text_merger: Box::new(NullTextMerger),
@@ -69,13 +70,10 @@ impl Daemon {
         Ok(())
     }
 
-    pub async fn run_request_handler(
-        &mut self,
-        mut rx: Receiver<crate::ipc::IpcMessage>,
-    ) -> Result<()> {
+    pub async fn run_request_handler(&mut self, mut rx: Receiver<IpcMessage>) -> Result<()> {
         while let Some(message) = rx.recv().await {
             match message {
-                crate::ipc::IpcMessage::CaptureNow(request) => {
+                IpcMessage::CaptureNow(request) => {
                     println!("Received capture request: {request:?}");
                     let session_id = self.handle_capture_request(request)?;
                     println!("Started capture session with ID: {session_id:?}");
@@ -88,7 +86,15 @@ impl Daemon {
 
     pub fn handle_capture_request(&mut self, request: CaptureRequest) -> Result<SessionId> {
         self.state = AppState::Capturing;
-        self.capture_backend.capture(&request)?;
+        let frame = self.capture_backend.capture(&request)?;
+
+        let overlay_state = OverlayState {
+            frame,
+            fragments: vec![],
+            selection: None,
+        };
+        self.overlay_backend
+            .update(OverlayCommand::ReplaceState(overlay_state))?;
 
         Ok(SessionId::new())
     }
